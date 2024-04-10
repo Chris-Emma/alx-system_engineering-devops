@@ -1,0 +1,35 @@
+#!/usr/bin/env bash
+# Bash script that displays information about a subdomain
+
+get_subdomain_info() {
+    local domain="$1"
+    local subdomain="$2"
+
+    #Querying DNS records for the specified subdomain
+    local dns_info
+    dns_info=$(dig "$subdomain.$domain" | awk '/ANSWER SECTION/ {getline; print}')
+
+    #Parsing the DNS info and extracting relevant details
+    local record_type
+    record_type=$(echo "$dns_info" | awk '{print $4}')
+    local destination
+    destination=$(echo "$dns_info" | awk '{print $5}')
+
+    #Printing the information in the required format
+    echo "The subdomain $subdomain is a $record_type record and points to $destination"
+}
+
+#Start of the main script
+domain="$1"
+subdomain="$2"
+
+#Display information for the default domains if the subdomain is not specified
+if [ -z "$subdomain" ]; then
+    get_subdomain_info "$domain" "www"
+    get_subdomain_info "$domain" "lb-01"
+    get_subdomain_info "$domain" "web-01"
+    get_subdomain_info "$domain" "web-02"
+else
+    #Information for the specified subdomain is specified
+    get_subdomain_info "$domain" "$subdomain"
+fi 
